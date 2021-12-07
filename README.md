@@ -83,8 +83,11 @@ https://openapi.youdao.com/asrapi
 |format|text|语音文件的格式，wav|true|wav|
 |rate|text|采样率，推荐16000采用率|true|16000|
 |channel|text|声道数，仅支持单声道，请填写固定值1|true|1|
-|type|text|上传类型，仅支持base64上传，请填写固定值1|true|1|其中q为base64编码的待识别音频文件，“上传的文件时长不能超过120s，文件大小不能超过10M”，这点需要注意一下。
+|type|text|上传类型，仅支持base64上传，请填写固定值1|true|1|
+
+其中q为base64编码的待识别音频文件，“上传的文件时长不能超过120s，文件大小不能超过10M”，这点需要注意一下。
 API的**返回内容**较为简单：
+
 |字段|含义|
 |---|---|
 |errorCode|识别结果错误码，一定存在。详细信息参加错误代码列表|
@@ -93,17 +96,14 @@ API的**返回内容**较为简单：
 ### （二）项目开发
 
 这个项目使用`python3`开发，包括`maindow.py`，`videoprocess.py`，`srbynetease.py`三个文件。
-
 `界面`部分，使用python自带的`tkinter库`，提供视频文件选择、时间输入框和确认按钮；
-
 `videoprocess.py`:来实现在视频的指定时间区间提取音频和处理API返回信息的功能；
-
 `srbynetease.py`:将处理好的音频发送到短语音识别API并返回结果。
 
 #### 1、界面部分的实现
 
 界面部分代码如下，比较简单。
-
+```
 root\=tk.Tk()
 root.title("netease youdao sr test")
 frm \= tk.Frame(root)
@@ -127,9 +127,9 @@ end\_input.grid(row\=2,column\=1)
 sure\_btn\=tk.Button(frm, text\='开始识别', command\=start\_sr)
 sure\_btn.grid(row\=3,column\=0,columnspan\=3)
 root.mainloop()
-
+```
 其中sure\_btn的绑定事件start\_sr()做了简单的异常处理，并通过弹窗打印最终的识别结果:
-
+```
 def start\_sr():
     print(video.video\_full\_path)
  if len(path\_text.get())\==0:
@@ -140,11 +140,11 @@ def start\_sr():
         sr\_result\=video.do\_sr()
 
     tk.messagebox.showinfo("识别结果", sr\_result)
-
+```
 #### 2、处理音视频功能开发
 
 （1）在videoprocess.py中，我用到了python的moviepy库来处理视频，按指定起止时间截取视频，提取音频，并按API要求转为base64编码形式：
-
+```
 def get\_audio\_base64(self):
     video\_clip\=VideoFileClip(self.video\_full\_path).subclip(self.start\_time,self.end\_time)
     audio\=video\_clip.audio
@@ -152,9 +152,9 @@ def get\_audio\_base64(self):
     audio.write\_audiofile(result\_path)
     audio\_base64 \= base64.b64encode(open(result\_path,'rb').read()).decode('utf-8')
     return audio\_base64
-
+```
 （2）处理好的音频文件编码传到封装好的有道智云API调用方法中：
-
+```
 def do\_sr(self):
     audio\_base64\=self.get\_audio\_base64()
     sr\_result\=srbynetease.connect(audio\_base64)
@@ -163,11 +163,11 @@ def do\_sr(self):
         return sr\_result\['result'\]
     else:
         return "Something wrong , errorCode:"+sr\_result\['errorCode'\]
-
+```
 #### 3、发送数据翻译功能的开发
 
 srbynetease.py中封装的调用方法比较简单，按API文档“组装”好data{}发送即可：
-
+```
 def connect(audio\_base64):
     data \= {}
     curtime \= str(int(time.time()))
@@ -189,7 +189,7 @@ def connect(audio\_base64):
     response \= do\_request(data)
 
     return json.loads(str(response.content,'utf-8'))
-
+```
 ## 四、效果展示
 
 随手打开《甄嬛传》第一集的某一小段试试：
